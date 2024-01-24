@@ -1,0 +1,21 @@
+int buzzerPin =9;
+void setup() {
+  Serial.begin(9600);  // Start serial communication
+  pinMode(buzzerPin, OUTPUT);  // Set buzzer pin as an output
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    while (Serial.available() > 0) {
+      char receivedChar = Serial.read();
+      
+      // Check if the received data is "SLEEPING"
+      if (receivedChar == 'S') {
+        // Beep the buzzer for 1 second
+        digitalWrite(buzzerPin, HIGH);
+        delay(100);
+        digitalWrite(buzzerPin, LOW);
+      }
+    }
+  }
+}

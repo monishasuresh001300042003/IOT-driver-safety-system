@@ -1,0 +1,178 @@
+#include <LiquidCrystal_I2C.h>
+// FOR COLLISION DETECTION
+const int pingPin1 = 8; // Trigger Pin of Ultrasonic Sensor1
+const int echoPin1 = 9; // Echo Pin of Ultrasonic Sensor1
+const int pingPin2 = 10; // Trigger Pin of Ultrasonic Sensor2
+const int echoPin2 = 11; // Echo Pin of Ultrasonic Sensor2
+//LANE DEPARTURE
+int sensor1 = 7;// sensor at right
+int sensor2=6; // sensor at left
+int right = 2; // led at right indicates lane departure detected by sensor1
+int left=3;   // led at left indicates lane departure detected by sensor2
+int buz=12;   // for collision detection
+int ab=250;   // delay ****u can vary it****
+LiquidCrystal_I2C lcd(0x27,16,2);
+
+void setup() {
+
+   Serial.begin(9600); // Starting Serial Terminal
+                      
+  lcd.init();
+  lcd.backlight();
+  pinMode(buz,OUTPUT);
+   pinMode(right, OUTPUT);
+  pinMode(sensor1, INPUT);
+   pinMode(left, OUTPUT);
+  pinMode(sensor2, INPUT);
+}
+
+void loop() {
+lane_depart_rl();
+ ultrsonic1();  // function call
+ ultrsonic2(); // function call
+}
+
+long microsecondsToInches(long microseconds) {
+   return microseconds / 74 / 2;
+}
+
+long microsecondsToCentimeters(long microseconds) {
+   return microseconds / 29 / 2;
+}
+
+void ultrsonic1(){
+     long duration, inches, cm;
+   pinMode(pingPin1, OUTPUT);
+   digitalWrite(pingPin1, LOW);
+   delayMicroseconds(2);
+   digitalWrite(pingPin1, HIGH);
+   delayMicroseconds(10);
+   digitalWrite(pingPin1, LOW);
+   pinMode(echoPin1, INPUT);
+   duration = pulseIn(echoPin1, HIGH);
+   cm = microsecondsToCentimeters(duration);
+     if(cm <= 8)
+    {
+ tone(buz, 1000); // Send 1KHz sound signal...
+ delay(300);        // ...for 1 sec
+  noTone(buz);     // Stop sound...
+  delay(100); 
+      lcd.setCursor(0,0);
+      lcd.print("Too close:" );
+      lcd.println(cm);
+        lcd.println("cm");
+        
+      delay(ab);
+    }
+  
+    else if(cm> 8 && cm <=16 )
+    {
+     
+       lcd.setCursor(0,0);
+      lcd.print("distance1:" );
+      lcd.println(cm);
+       lcd.println("cm");
+      delay(ab);
+      
+    }
+     
+    else{ 
+    
+        lcd.setCursor(0,0);
+       lcd.println("front safe");
+        delay(ab);
+      
+    }
+    lcd.clear();
+/* lcd.setCursor(0,0);
+  lcd.print("distance1:" );
+  lcd.println(cm);
+  lcd.println("cm");
+  lcd.println("cm");*/
+   Serial.print(cm);
+   Serial.print("cm");
+   Serial.println();
+   
+   delay(50);
+}
+void ultrsonic2(){
+    long duration, inches, cm;
+   pinMode(pingPin2, OUTPUT);
+   digitalWrite(pingPin2, LOW);
+   delayMicroseconds(2);
+   digitalWrite(pingPin2, HIGH);
+   delayMicroseconds(10);
+   digitalWrite(pingPin2, LOW);
+   pinMode(echoPin2, INPUT);
+   duration = pulseIn(echoPin2, HIGH);
+   cm = microsecondsToCentimeters(duration);
+        if(cm <= 8)
+    {
+   tone(buz, 1000); // Send 1KHz sound signal...
+  delay(300);        // ...for 1 sec
+  noTone(buz);     // Stop sound...
+  delay(100);  
+      lcd.setCursor(0,1);
+      lcd.print("too close" );
+      lcd.println(cm);
+      lcd.println("cm");
+      delay(ab);
+    
+    }
+    else if(cm> 8 && cm <=16 )
+    {
+     
+       lcd.setCursor(0,1);
+      lcd.print("distance2:" );
+      lcd.println(cm);
+      lcd.println("cm");
+      delay(ab);
+       
+    }
+    else{ 
+      
+        lcd.setCursor(0,1);
+       lcd.println("REAR_SAFE");
+       delay(ab);
+        
+    }
+    lcd.clear();
+  /*lcd.setCursor(0,1);
+  lcd.print("distance2:" );
+  lcd.println(cm);
+  lcd.println("cm");*/
+   Serial.print(cm);
+   Serial.print("cm");
+   Serial.println();
+   
+   delay(50);
+}
+ void lane_depart_rl()
+    {
+      int lane_r = digitalRead(sensor1);
+  int lane_l = digitalRead(sensor2);
+  
+  //delay(25);
+   if (lane_r==LOW){ // LOW MEANS Object Detected
+    digitalWrite(right, HIGH);
+    Serial.print("right:");
+    Serial.println(lane_r);
+    delay(25);
+    
+  }
+  else
+  {
+    digitalWrite(right, LOW); 
+  }
+
+  if (lane_l==LOW){ // LOW MEANS Object Detected
+    digitalWrite(left, HIGH);
+    Serial.print("left:");
+    Serial.println(lane_l);
+    
+  }
+  else
+  {
+    digitalWrite(left, LOW); 
+  }
+  }

@@ -1,0 +1,86 @@
+#include <Adafruit_Sensor.h>
+#include <LiquidCrystal_I2C.h>
+#include  <Wire.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
+#define DHTTYPE    DHT11     // DHT 11
+#define DHTPIN 6
+
+
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+uint32_t delayMS;
+
+
+LiquidCrystal_I2C lcd(0x27,  16, 2);
+void setup() {
+
+
+  Serial.begin(9600);
+  dht.begin();
+  sensor_t sensor;
+  pinMode(A3,INPUT);
+   Serial.begin(9600);
+
+  delayMS = sensor.min_delay / 1000;
+  lcd.init();
+  // turn on the backlight
+  lcd.backlight();
+
+}
+
+void loop()
+{
+
+  delay(1000);
+  // tell the screen to write on the top row
+ rain();
+  lcd.setCursor(0,0);
+  sensors_event_t event;
+
+
+  dht.temperature().getEvent(&event);
+
+
+  Serial.print(F("T:"));
+  lcd.print(F("T:"));
+  lcd.print(event.temperature);
+  Serial.print(event.temperature);
+  Serial.println(F("C"));
+  dht.humidity().getEvent(&event);
+
+ lcd.setCursor(0,0);
+  //Serial.print(F("H:"));
+  lcd.print(F("H:"));
+  Serial.print(event.relative_humidity);
+  lcd.print(event.relative_humidity);
+  Serial.println(F("%"));
+  lcd.print("%");
+
+  delay(1000);
+
+
+}
+void rain(){
+  int rain = analogRead(A3);//read value
+  if (rain < 400) {
+    lcd.clear();
+      
+      lcd.setCursor(0,1);
+      lcd.print(rain );
+      lcd.println(":It's RAIN!!" );
+      Serial.println("It's rain");
+      delay(200);
+      
+
+  } else {
+    lcd.clear();
+    
+      lcd.setCursor(0,1);
+       lcd.print(rain );
+      lcd.print(":no RAIN :) ");
+      Serial.println("NOT Raining");
+        delay(200);
+  }
+  }
